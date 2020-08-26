@@ -321,6 +321,10 @@ export interface ConfigObject {
      * @default `false`
      */
     blockAssets ?: boolean;
+    viewport ?: {
+        width: number;
+        height: number;
+    }
     /**@internal */
     [x: string]: any 
 }
