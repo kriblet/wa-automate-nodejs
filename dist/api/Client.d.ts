@@ -77,6 +77,10 @@ export declare class Client {
         qrFormat?: import("./model").QRFormat;
         hostNotificationLang?: import("./model").NotificationLanguage;
         blockAssets?: boolean;
+        viewport?: {
+            width: number;
+            height: number;
+        };
     };
     private pup;
     private registerListener;

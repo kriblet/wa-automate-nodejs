@@ -110,8 +110,8 @@ function initClient(sessionId, config, customUserAgent) {
                 case 5:
                     _c.sent();
                     return [4, waPage.setViewport({
-                            width: puppeteer_config_1.width,
-                            height: puppeteer_config_1.height,
+                            width: config.viewport ? config.viewport.width : puppeteer_config_1.width,
+                            height: config.viewport ? config.viewport.height : puppeteer_config_1.height,
                             deviceScaleFactor: 1
                         })];
                 case 6:

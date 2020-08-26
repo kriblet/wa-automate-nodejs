@@ -76,5 +76,9 @@ export interface ConfigObject {
     qrFormat?: QRFormat;
     hostNotificationLang?: NotificationLanguage;
     blockAssets?: boolean;
+    viewport?: {
+        width: number;
+        height: number;
+    };
     [x: string]: any;
 }
