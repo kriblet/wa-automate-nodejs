@@ -1,1 +1,3 @@
-export declare function popup(preferredPort: boolean | number): Promise<unknown>;
+import { ConfigObject } from "../../api/model";
+export declare function popup(config: ConfigObject): Promise<unknown>;
+export declare const closeHttp: () => Promise<void>;

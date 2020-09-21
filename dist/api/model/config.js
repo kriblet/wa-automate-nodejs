@@ -12,6 +12,8 @@ var NotificationLanguage;
     NotificationLanguage["PTBR"] = "pt-br";
     NotificationLanguage["ENGB"] = "en-gb";
     NotificationLanguage["DEDE"] = "de-de";
+    NotificationLanguage["IDID"] = "id-id";
+    NotificationLanguage["ITIT"] = "it-it";
     NotificationLanguage["ES"] = "es";
 })(NotificationLanguage = exports.NotificationLanguage || (exports.NotificationLanguage = {}));
 var QRQuality;

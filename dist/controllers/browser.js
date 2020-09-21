@@ -25,7 +25,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -84,11 +84,12 @@ var puppeteer_config_1 = require("../config/puppeteer.config");
 var events_1 = require("./events");
 var ON_DEATH = require('death');
 var useProxy = require('puppeteer-page-proxy');
+var storage = require('node-persist');
 var browser;
 function initClient(sessionId, config, customUserAgent) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var waPage, cacheEnabled, blockCrashLogs, _waPage, blockAssets, interceptAuthentication, quickAuthed, patterns, authCompleteEv_1, sessionjsonpath, sessionjson, sd, s;
+        var waPage, cacheEnabled, blockCrashLogs, blockAssets, interceptAuthentication, proxyAddr, quickAuthed, authCompleteEv_1, sessionjsonpath, sessionjson, sd, s;
         var _this = this;
         return __generator(this, function (_c) {
             switch (_c.label) {
@@ -124,97 +125,56 @@ function initClient(sessionId, config, customUserAgent) {
                     return [4, waPage.setCacheEnabled(cacheEnabled)];
                 case 8:
                     _c.sent();
-                    _waPage = waPage;
                     blockAssets = !(config === null || config === void 0 ? void 0 : config.headless) ? false : (config === null || config === void 0 ? void 0 : config.blockAssets) || false;
-                    interceptAuthentication = !(config === null || config === void 0 ? void 0 : config.safeMode);
-                    quickAuthed = false;
-                    if (!(blockAssets || blockCrashLogs)) return [3, 12];
-                    patterns = [];
-                    if (interceptAuthentication) {
-                        authCompleteEv_1 = new events_1.EvEmitter(sessionId, 'AUTH');
-                        patterns.push({ urlPattern: '*_priority_components*' });
+                    if (blockAssets) {
+                        puppeteer.use(require('puppeteer-extra-plugin-block-resources')({
+                            blockedTypes: new Set(['image', 'stylesheet', 'font'])
+                        }));
                     }
-                    if (blockCrashLogs)
-                        patterns.push({ urlPattern: '*crashlogs' });
-                    if (!blockAssets) return [3, 10];
-                    return [4, _waPage._client.send('Network.enable')];
+                    interceptAuthentication = !(config === null || config === void 0 ? void 0 : config.safeMode);
+                    proxyAddr = (config === null || config === void 0 ? void 0 : config.proxyServerCredentials) ? "" + (((_a = config.proxyServerCredentials) === null || _a === void 0 ? void 0 : _a.username) && ((_b = config.proxyServerCredentials) === null || _b === void 0 ? void 0 : _b.password) ? (config.proxyServerCredentials.protocol ||
+                        config.proxyServerCredentials.address.includes('https') ? 'https' :
+                        config.proxyServerCredentials.address.includes('http') ? 'http' :
+                            config.proxyServerCredentials.address.includes('socks5') ? 'socks5' :
+                                config.proxyServerCredentials.address.includes('socks4') ? 'socks4' : 'http') + "://" + config.proxyServerCredentials.username + ":" + config.proxyServerCredentials.password + "@" + config.proxyServerCredentials.address
+                        .replace('https', '')
+                        .replace('http', '')
+                        .replace('socks5', '')
+                        .replace('socks4', '')
+                        .replace('://', '') : config.proxyServerCredentials.address) : false;
+                    quickAuthed = false;
+                    if (!(interceptAuthentication || proxyAddr || blockCrashLogs)) return [3, 10];
+                    return [4, waPage.setRequestInterception(true)];
                 case 9:
                     _c.sent();
-                    _waPage._client.send('Network.setBypassServiceWorker', {
-                        bypass: true,
-                    });
-                    patterns = __spreadArrays(patterns, [
-                        { urlPattern: '*.css' },
-                        { urlPattern: '*.jpg' },
-                        { urlPattern: '*.jpg*' },
-                        { urlPattern: '*.jpeg' },
-                        { urlPattern: '*.jpeg*' },
-                        { urlPattern: '*.webp' },
-                        { urlPattern: '*.png' },
-                        { urlPattern: '*.mp3' },
-                        { urlPattern: '*.svg' },
-                        { urlPattern: '*.woff' },
-                        { urlPattern: '*.pdf' },
-                        { urlPattern: '*.zip' },
-                        { urlPattern: '*crashlogs' },
-                    ]);
-                    _c.label = 10;
-                case 10: return [4, _waPage._client.send('Network.setRequestInterception', {
-                        patterns: patterns,
-                    })];
-                case 11:
-                    _c.sent();
-                    _waPage._client.on('Network.requestIntercepted', function (_a) {
-                        var interceptionId = _a.interceptionId, request = _a.request;
-                        return __awaiter(_this, void 0, void 0, function () {
-                            var extensions, req_extension;
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
-                                    case 0:
-                                        extensions = [
-                                            '.css',
-                                            '.jpg',
-                                            '.jpeg',
-                                            '.webp',
-                                            '.mp3',
-                                            '.png',
-                                            '.svg',
-                                            '.woff',
-                                            '.pdf',
-                                            '.zip',
-                                        ];
-                                        req_extension = path.extname(request.url);
-                                        if (!((blockAssets && extensions.includes(req_extension)) ||
-                                            request.url.includes('.jpg') ||
-                                            (blockCrashLogs && request.url.includes('crashlogs')))) return [3, 2];
-                                        return [4, waPage._client.send('Network.continueInterceptedRequest', {
-                                                interceptionId: interceptionId,
-                                                rawResponse: '',
-                                            })];
-                                    case 1:
-                                        _b.sent();
-                                        return [3, 5];
-                                    case 2: return [4, waPage._client.send('Network.continueInterceptedRequest', {
-                                            interceptionId: interceptionId,
-                                        })];
-                                    case 3:
-                                        _b.sent();
-                                        if (!(interceptAuthentication &&
-                                            request.url.includes('_priority_components') &&
-                                            !quickAuthed)) return [3, 5];
-                                        authCompleteEv_1.emit(true);
-                                        return [4, waPage.evaluate('window.WA_AUTHENTICATED=true;')];
-                                    case 4:
-                                        _b.sent();
-                                        quickAuthed = true;
-                                        _b.label = 5;
-                                    case 5: return [2];
-                                }
-                            });
+                    authCompleteEv_1 = new events_1.EvEmitter(sessionId, 'AUTH');
+                    waPage.on('request', function (request) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (!(interceptAuthentication &&
+                                        request.url().includes('_priority_components') &&
+                                        !quickAuthed)) return [3, 2];
+                                    authCompleteEv_1.emit(true);
+                                    return [4, waPage.evaluate('window.WA_AUTHENTICATED=true;')];
+                                case 1:
+                                    _a.sent();
+                                    quickAuthed = true;
+                                    _a.label = 2;
+                                case 2:
+                                    if (request.url().includes('https://crashlogs.whatsapp.net/') && blockCrashLogs) {
+                                        request.abort();
+                                    }
+                                    else if (proxyAddr)
+                                        useProxy(request, proxyAddr);
+                                    else
+                                        request.continue();
+                                    return [2];
+                            }
                         });
-                    });
-                    _c.label = 12;
-                case 12:
+                    }); });
+                    _c.label = 10;
+                case 10:
                     sessionjsonpath = ((config === null || config === void 0 ? void 0 : config.sessionDataPath) && (config === null || config === void 0 ? void 0 : config.sessionDataPath.includes('.data.json'))) ? path.join(path.resolve(process.cwd(), (config === null || config === void 0 ? void 0 : config.sessionDataPath) || '')) : path.join(path.resolve(process.cwd(), (config === null || config === void 0 ? void 0 : config.sessionDataPath) || ''), (sessionId || 'session') + ".data.json");
                     sessionjson = '';
                     sd = process.env[sessionId.toUpperCase() + "_DATA_JSON"] ? JSON.parse(process.env[sessionId.toUpperCase() + "_DATA_JSON"]) : config === null || config === void 0 ? void 0 : config.sessionData;
@@ -228,32 +188,23 @@ function initClient(sessionId, config, customUserAgent) {
                             sessionjson = JSON.parse(Buffer.from(s, 'base64').toString('ascii'));
                         }
                     }
-                    if (!sessionjson) return [3, 14];
+                    if (!sessionjson) return [3, 12];
                     return [4, waPage.evaluateOnNewDocument(function (session) {
                             localStorage.clear();
                             Object.keys(session).forEach(function (key) { return localStorage.setItem(key, session[key]); });
                         }, sessionjson)];
+                case 11:
+                    _c.sent();
+                    _c.label = 12;
+                case 12:
+                    if (!(config === null || config === void 0 ? void 0 : config.proxyServerCredentials)) return [3, 14];
+                    return [4, useProxy(waPage, proxyAddr)];
                 case 13:
                     _c.sent();
-                    _c.label = 14;
-                case 14:
-                    if (!(config === null || config === void 0 ? void 0 : config.proxyServerCredentials)) return [3, 16];
-                    return [4, useProxy(waPage, "" + (((_a = config.proxyServerCredentials) === null || _a === void 0 ? void 0 : _a.username) && ((_b = config.proxyServerCredentials) === null || _b === void 0 ? void 0 : _b.password) ? (config.proxyServerCredentials.protocol ||
-                            config.proxyServerCredentials.address.includes('https') ? 'https' :
-                            config.proxyServerCredentials.address.includes('http') ? 'http' :
-                                config.proxyServerCredentials.address.includes('socks5') ? 'socks5' :
-                                    config.proxyServerCredentials.address.includes('socks4') ? 'socks4' : 'http') + "://" + config.proxyServerCredentials.username + ":" + config.proxyServerCredentials.password + "@" + config.proxyServerCredentials.address
-                            .replace('https', '')
-                            .replace('http', '')
-                            .replace('socks5', '')
-                            .replace('socks4', '')
-                            .replace('://', '') : config.proxyServerCredentials.address))];
-                case 15:
-                    _c.sent();
                     console.log("Active proxy: " + config.proxyServerCredentials.address);
-                    _c.label = 16;
-                case 16: return [4, waPage.goto(puppeteer_config_1.puppeteerConfig.WAUrl)];
-                case 17:
+                    _c.label = 14;
+                case 14: return [4, waPage.goto(puppeteer_config_1.puppeteerConfig.WAUrl)];
+                case 15:
                     _c.sent();
                     return [2, waPage];
             }
@@ -294,48 +245,64 @@ exports.injectApi = injectApi;
 function initBrowser(sessionId, config) {
     if (config === void 0) { config = {}; }
     return __awaiter(this, void 0, void 0, function () {
-        var browserFetcher, browserDownloadSpinner_1, revisionInfo, error_1, browser, _a, tunnel;
+        var _savedPath, browserFetcher, browserDownloadSpinner_1, revisionInfo, error_1, args, browser, _a, tunnel;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    if ((config === null || config === void 0 ? void 0 : config.useChrome) && !(config === null || config === void 0 ? void 0 : config.executablePath)) {
-                        config.executablePath = ChromeLauncher.Launcher.getInstallations()[0];
-                        console.log("You have used the useChrome (--use-chrome) config option. In order to improve startup time please use \"executablePath\": \"" + config.executablePath + "\" to save a few seconds on next startup.");
-                    }
-                    if (!(config === null || config === void 0 ? void 0 : config.browserRevision)) return [3, 4];
+                    if (!((config === null || config === void 0 ? void 0 : config.useChrome) && !(config === null || config === void 0 ? void 0 : config.executablePath))) return [3, 5];
+                    return [4, storage.init()];
+                case 1:
+                    _b.sent();
+                    return [4, storage.getItem('executablePath')];
+                case 2:
+                    _savedPath = _b.sent();
+                    if (!!_savedPath) return [3, 4];
+                    config.executablePath = ChromeLauncher.Launcher.getInstallations()[0];
+                    return [4, storage.setItem('executablePath', config.executablePath)];
+                case 3:
+                    _b.sent();
+                    return [3, 5];
+                case 4:
+                    config.executablePath = _savedPath;
+                    _b.label = 5;
+                case 5:
+                    if (!(config === null || config === void 0 ? void 0 : config.browserRevision)) return [3, 9];
                     browserFetcher = puppeteer.createBrowserFetcher();
                     browserDownloadSpinner_1 = new events_1.Spin(sessionId + '_browser', 'Browser', false, false);
-                    _b.label = 1;
-                case 1:
-                    _b.trys.push([1, 3, , 4]);
+                    _b.label = 6;
+                case 6:
+                    _b.trys.push([6, 8, , 9]);
                     browserDownloadSpinner_1.start('Downloading browser revision: ' + config.browserRevision);
                     return [4, browserFetcher.download(config.browserRevision, function (downloadedBytes, totalBytes) {
                             browserDownloadSpinner_1.info("Downloading Browser: " + Math.round(downloadedBytes / 1000000) + "/" + Math.round(totalBytes / 1000000));
                         })];
-                case 2:
+                case 7:
                     revisionInfo = _b.sent();
                     if (revisionInfo.executablePath) {
                         config.executablePath = revisionInfo.executablePath;
                     }
                     browserDownloadSpinner_1.succeed('Browser downloaded successfully');
-                    return [3, 4];
-                case 3:
+                    return [3, 9];
+                case 8:
                     error_1 = _b.sent();
                     browserDownloadSpinner_1.succeed('Something went wrong while downloading the browser');
-                    return [3, 4];
-                case 4:
+                    return [3, 9];
+                case 9:
                     if (config === null || config === void 0 ? void 0 : config.browserWsEndpoint)
                         config.browserWSEndpoint = config.browserWsEndpoint;
-                    if (!(config === null || config === void 0 ? void 0 : config.browserWSEndpoint)) return [3, 6];
+                    args = __spreadArrays(puppeteer_config_1.puppeteerConfig.chromiumArgs, ((config === null || config === void 0 ? void 0 : config.chromiumArgs) || []));
+                    if (config === null || config === void 0 ? void 0 : config.corsFix)
+                        args.push('--disable-web-security');
+                    if (!(config === null || config === void 0 ? void 0 : config.browserWSEndpoint)) return [3, 11];
                     return [4, puppeteer.connect(__assign({}, config))];
-                case 5:
+                case 10:
                     _a = _b.sent();
-                    return [3, 8];
-                case 6: return [4, puppeteer.launch(__assign({ headless: true, devtools: false, args: __spreadArrays(puppeteer_config_1.puppeteerConfig.chromiumArgs) }, config))];
-                case 7:
+                    return [3, 13];
+                case 11: return [4, puppeteer.launch(__assign({ headless: true, devtools: false, args: args }, config))];
+                case 12:
                     _a = _b.sent();
-                    _b.label = 8;
-                case 8:
+                    _b.label = 13;
+                case 13:
                     browser = _a;
                     if (config && config.devtools) {
                         if (config.devtools.user && config.devtools.pass)
