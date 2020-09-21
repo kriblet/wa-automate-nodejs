@@ -38,6 +38,9 @@ const cli = meow(`
       --session-data-only, -o \t\tKill the process when the sesion data is saved.
       --license, -l \t\t\tThe license key you want to use for this server. License keys are used to unlock features. Learn more here https://github.com/open-wa/wa-automate-nodejs#license-key
 ${configParamText}
+	  --skip-save-postman-collection \t\t\tDon't save the postman collection.
+	  --in-docker \t\t\tGrab config options from the environment variables
+	  --api-host \t\t\tThe easy API may be sitting behind a reverse proxy. In this case set --api-host in order to make sure the api docs and api explorer are working properly. You will need to include the protocol as well.
 
 	Please check here for more information on some of the above mentioned parameters: https://open-wa.github.io/wa-automate-nodejs/interfaces/configobject.html
 
@@ -55,6 +58,9 @@ ${configParamText}
 			type: 'string',
 			alias: 'h',
 			default: 'localhost'
+		},
+		apiHost: {
+			type: 'string',
 		},
 		webhook: {
 			type: 'string',
@@ -99,13 +105,31 @@ ${configParamText}
 			alias: 'o',
 			default: false
 		},
-		...extraFlags
+		inDocker: {
+			type: 'boolean',
+			default: false
+		},
+		skipSavePostmanCollection: {
+			type: 'boolean',
+			default: false
+		},
+		...extraFlags,
+		popup: { 
+			type: 'boolean',
+			default: false
+		},
+		popupPort: {
+		type: 'number',
+		}
 	},
 	booleanDefault: undefined
 });
 
 app.use(express.json({ limit: '200mb' })) //add the limit option so we can send base64 data through the api
-const c = cli.flags;
+const c = {
+	autoRefresh: true,
+	...cli.flags
+};
 const PORT = c.port;
 let config = {};
 if (c && c.config) {
@@ -132,6 +156,13 @@ if (c && c.licenseKey) {
 	config = {
 		...config,
 		licenseKey: c.licenseKey
+	}
+}
+
+if(c && c.popup) {
+	config = {
+		...config,
+		popup: PORT
 	}
 }
 
@@ -174,11 +205,12 @@ create({ ...config })
 
 			if(c && c.generateApiDocs) {
 				console.log('Generating API Docs');
+				if(!c.sessionId) c.sessionId = 'session';
 				const postmanCollection = await generatePostmanJson({
 					...c,
 					...config
 				});
-				console.log('Postman collection generated: open-wa.postman_collection.json');
+				console.log(`Postman collection generated: open-wa-${c.sessionId}.postman_collection.json`);
 				const swCol = p2s.default(postmanCollection);
 				/**
 				 * Fix swagger docs by removing the content type as a required paramater
@@ -192,8 +224,15 @@ create({ ...config })
 			}
 			
 			app.use(client.middleware((c && c.useSessionIdInPath)));
-			app.listen(PORT, () => console.log(`\n• Listening on port ${PORT}!`));
-			const apiDocsUrl = `${c.host.includes('http') ? '' : 'http://'}${c.host}:${PORT}/api-docs`;
+			app.listen(PORT, () => {
+				console.log(`\n• Listening on port ${PORT}!`);
+				if(process.send){
+					process.send('ready');
+					process.send('ready');
+					process.send('ready');
+				}
+			});
+			const apiDocsUrl = c.apiHost ? `${c.apiHost}/api-docs/ `: `${c.host.includes('http') ? '' : 'http://'}${c.host}:${PORT}/api-docs/ `;
 			const link = terminalLink('API Explorer', apiDocsUrl);
 			if(c && c.generateApiDocs)  console.log(`\nCheck out the API here: ${link}`)
 

@@ -25,7 +25,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -76,7 +76,7 @@ var uniq = require('lodash.uniq');
 var fs = require('fs');
 var pkg = require('../../package.json');
 var hasha = require('hasha');
-var currentHash = '78c86cb0977d3b0d595d1e8e062bc4ac';
+var currentHash = 'f1d7de3a7817b194743782383fd7b0f9';
 function checkWAPIHash() {
     return __awaiter(this, void 0, void 0, function () {
         var h;

@@ -41,7 +41,7 @@ var fs = require('fs');
 var typescript_parser_1 = require("typescript-parser");
 var parser = new typescript_parser_1.TypescriptParser();
 var change_case_1 = require("change-case");
-var path = require("path");
+var path = require("path"), parseUrl = require("parse-url");
 var aliasExamples = {
     "ChatId": "00000000000@c.us or 00000000000-111111111@g.us",
     "GroupChatId": "00000000000-111111111@g.us",
@@ -62,10 +62,17 @@ var primatives = [
 exports.generatePostmanJson = function (setup) {
     if (setup === void 0) { setup = {}; }
     return __awaiter(this, void 0, void 0, function () {
-        var data, parsed, x, postmanGen, pm, d, postmanWrap, res;
+        var parsed_1, data, parsed, x, postmanGen, pm, d, postmanWrap, res;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (setup === null || setup === void 0 ? void 0 : setup.apiHost) {
+                        if (setup.apiHost.includes(setup.sessionId)) {
+                            parsed_1 = parseUrl(setup.apiHost);
+                            setup.host = parsed_1.resource;
+                            setup.port = parsed_1.port;
+                        }
+                    }
                     data = fs.readFileSync(path.resolve(__dirname, '../api/_client_ts'), 'utf8');
                     return [4, parser.parseSource(data)];
                 case 1:
@@ -85,7 +92,8 @@ exports.generatePostmanJson = function (setup) {
                     d = JSON.stringify(x);
                     postmanWrap = postmanWrapGen(setup);
                     res = postmanWrap(pm);
-                    fs.writeFileSync('./open-wa.postman_collection.json', JSON.stringify(res));
+                    if (!(setup === null || setup === void 0 ? void 0 : setup.skipSavePostmanCollection))
+                        fs.writeFileSync("./open-wa-" + setup.sessionId + ".postman_collection.json", JSON.stringify(res));
                     return [2, res];
             }
         });
@@ -111,12 +119,15 @@ var postmanRequestGeneratorGenerator = function (setup) {
             args[param.name] = aliasExamples[param.type] ? aliasExamples[param.type] : paramNameExamples[param.name] ? paramNameExamples[param.name] : primatives.includes(param.type) ? param.type : 'Check documentation in description';
         });
         var url = {
-            "raw": (setup === null || setup === void 0 ? void 0 : setup.useSessionIdInPath) ? "{{address}}:{{port}}/{{sessionId}}/" + method.name : "{{address}}:{{port}}/" + method.name,
+            "raw": setup.apiHost ? "{{address}}:{{port}}/" + parseUrl(setup.apiHost).pathname.substring(1) + "/" + method.name : (setup === null || setup === void 0 ? void 0 : setup.useSessionIdInPath) ? "{{address}}:{{port}}/{{sessionId}}/" + method.name : "{{address}}:{{port}}/" + method.name,
             "host": [
                 "{{address}}"
             ],
             "port": "{{port}}",
-            "path": (setup === null || setup === void 0 ? void 0 : setup.useSessionIdInPath) ? [
+            "path": (setup === null || setup === void 0 ? void 0 : setup.apiHost) ? [
+                parseUrl(setup.apiHost).pathname.substring(1),
+                "" + method.name
+            ] : (setup === null || setup === void 0 ? void 0 : setup.useSessionIdInPath) ? [
                 "{{sessionId}}",
                 "" + method.name
             ] : ["" + method.name]
@@ -185,7 +196,7 @@ var postmanWrapGen = function (setup) {
         return {
             "info": {
                 "_postman_id": "0df31aa3-b3ce-4f20-b042-0882db0fd3a2",
-                "name": "open-wa",
+                "name": "@open-wa - " + setup.sessionId,
                 "description": "Requests for use with open-wa",
                 "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
             },

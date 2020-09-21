@@ -8,6 +8,8 @@ export declare enum NotificationLanguage {
     PTBR = "pt-br",
     ENGB = "en-gb",
     DEDE = "de-de",
+    IDID = "id-id",
+    ITIT = "it-it",
     ES = "es"
 }
 export declare enum QRQuality {
@@ -80,5 +82,6 @@ export interface ConfigObject {
         width: number;
         height: number;
     };
+    corsFix?: boolean;
     [x: string]: any;
 }

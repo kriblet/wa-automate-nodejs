@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>NotificationLanguage | @open-wa/wa-automate - v2.0.23</title>
+	<title>CustomProduct | @open-wa/wa-automate - v2.0.23</title>
 	<meta name="description" content="Documentation for @open-wa/wa-automate - v2.0.23">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -61,102 +61,122 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="notificationlanguage.html">NotificationLanguage</a>
+					<a href="customproduct.html">CustomProduct</a>
 				</li>
 			</ul>
-			<h1>Enumeration NotificationLanguage</h1>
+			<h1>Interface CustomProduct</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>The available languages for the host security notification</p>
-					</div>
-				</div>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">CustomProduct</span>
+					</li>
+				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Enumeration members</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="notificationlanguage.html#dede" class="tsd-kind-icon">DEDE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="notificationlanguage.html#engb" class="tsd-kind-icon">ENGB</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="notificationlanguage.html#es" class="tsd-kind-icon">ES</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="notificationlanguage.html#idid" class="tsd-kind-icon">IDID</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="notificationlanguage.html#itit" class="tsd-kind-icon">ITIT</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="notificationlanguage.html#ptbr" class="tsd-kind-icon">PTBR</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="customproduct.html#currency" class="tsd-kind-icon">currency</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="customproduct.html#description" class="tsd-kind-icon">description</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="customproduct.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="customproduct.html#priceamount1000" class="tsd-kind-icon">price<wbr>Amount1000</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="customproduct.html#url" class="tsd-kind-icon">url</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Enumeration members</h2>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="dede" class="tsd-anchor"></a>
-					<h3>DEDE</h3>
-					<div class="tsd-signature tsd-kind-icon">DEDE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;de-de&quot;</span></div>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="currency" class="tsd-anchor"></a>
+					<h3>currency</h3>
+					<div class="tsd-signature tsd-kind-icon">currency<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/config.ts#L18">api/model/config.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/product.ts#L22">api/model/product.ts:22</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The <a href="https://en.wikipedia.org/wiki/ISO_4217"><strong>ISO 4217</strong></a> 3 letter currency code. E.g (Swedish krona)
+							<code>SEK</code></p>
+						</div>
+					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="engb" class="tsd-anchor"></a>
-					<h3>ENGB</h3>
-					<div class="tsd-signature tsd-kind-icon">ENGB<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;en-gb&quot;</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="description" class="tsd-anchor"></a>
+					<h3>description</h3>
+					<div class="tsd-signature tsd-kind-icon">description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/config.ts#L17">api/model/config.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/product.ts#L12">api/model/product.ts:12</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The description of the product. This shows right under the price so it is useful for subscriptions/rentals. E.g:</p>
+						</div>
+						<p><code>(per day)\n\nCome and have a fantastic sailing adventure aboard our boat. \nShe is a Bavaria 35 sports cruiser and is powered by 2 economical Volvo D6’s with Bravo 2 outdrives as well as a bow thruster. This Makes maneuvering very easy. She can accommodate up to 8 people for day charters and for overnight charters she can accommodate 4 in comfort in 2 cabins.</code></p>
+					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="es" class="tsd-anchor"></a>
-					<h3>ES</h3>
-					<div class="tsd-signature tsd-kind-icon">ES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;es&quot;</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/config.ts#L21">api/model/config.ts:21</a></li>
+							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/product.ts#L6">api/model/product.ts:6</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The main title of the product. E.g:
+							<code>BAVARIA — 35 SPORTS CRUISER (2006)</code></p>
+						</div>
+					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="idid" class="tsd-anchor"></a>
-					<h3>IDID</h3>
-					<div class="tsd-signature tsd-kind-icon">IDID<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;id-id&quot;</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="priceamount1000" class="tsd-anchor"></a>
+					<h3>price<wbr>Amount1000</h3>
+					<div class="tsd-signature tsd-kind-icon">price<wbr>Amount1000<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/config.ts#L19">api/model/config.ts:19</a></li>
+							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/product.ts#L17">api/model/product.ts:17</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The price amount multiplied by 1000. For example, for something costing <code>825</code> units of currency:
+							<code>825000</code></p>
+						</div>
+					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="itit" class="tsd-anchor"></a>
-					<h3>ITIT</h3>
-					<div class="tsd-signature tsd-kind-icon">ITIT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;it-it&quot;</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="url" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> url</h3>
+					<div class="tsd-signature tsd-kind-icon">url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/config.ts#L20">api/model/config.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/product.ts#L28">api/model/product.ts:28</a></li>
 						</ul>
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="ptbr" class="tsd-anchor"></a>
-					<h3>PTBR</h3>
-					<div class="tsd-signature tsd-kind-icon">PTBR<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;pt-br&quot;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/open-wa/wa-automate-nodejs/blob/19a18d7/src/api/model/config.ts#L16">api/model/config.ts:16</a></li>
-						</ul>
-					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The URL of the product.</p>
+						</div>
+						<p>NOTE: At the moment, the URL DOES NOT WORK. It shows up for the recipient but they will not be able to click it. As a rememdy, it is added as a reply to the product message.</p>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -241,26 +261,23 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-enum">
-						<a href="notificationlanguage.html" class="tsd-kind-icon">Notification<wbr>Language</a>
+					<li class="current tsd-kind-interface">
+						<a href="customproduct.html" class="tsd-kind-icon">Custom<wbr>Product</a>
 						<ul>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="notificationlanguage.html#dede" class="tsd-kind-icon">DEDE</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="customproduct.html#currency" class="tsd-kind-icon">currency</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="notificationlanguage.html#engb" class="tsd-kind-icon">ENGB</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="customproduct.html#description" class="tsd-kind-icon">description</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="notificationlanguage.html#es" class="tsd-kind-icon">ES</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="customproduct.html#name" class="tsd-kind-icon">name</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="notificationlanguage.html#idid" class="tsd-kind-icon">IDID</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="customproduct.html#priceamount1000" class="tsd-kind-icon">price<wbr>Amount1000</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="notificationlanguage.html#itit" class="tsd-kind-icon">ITIT</a>
-							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="notificationlanguage.html#ptbr" class="tsd-kind-icon">PTBR</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="customproduct.html#url" class="tsd-kind-icon">url</a>
 							</li>
 						</ul>
 					</li>

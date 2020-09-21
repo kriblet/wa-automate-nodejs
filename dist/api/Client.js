@@ -25,7 +25,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -87,7 +87,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Client = exports.SimpleListener = exports.namespace = void 0;
+exports.useragent = exports.Client = exports.SimpleListener = exports.namespace = void 0;
 var axios_1 = __importDefault(require("axios"));
 var puppeteer_config_1 = require("../config/puppeteer.config");
 var sharp_1 = __importDefault(require("sharp"));
@@ -209,6 +209,9 @@ var Client = (function () {
         this._listeners = {};
         this._setOnClose();
     }
+    Client.prototype.getSessionId = function () {
+        return this._createConfig.sessionId;
+    };
     Client.prototype.getPage = function () {
         return this._page;
     };
@@ -330,7 +333,7 @@ var Client = (function () {
                     case 0:
                         set = function () { return _this.pup(function (_a) {
                             var funcName = _a.funcName;
-                            return window[funcName] ? WAPI[funcName](function (obj) { return window[funcName](obj); }) : false;
+                            return window[funcName] ? WAPI["" + funcName](function (obj) { return window[funcName](obj); }) : false;
                         }, { funcName: funcName }); };
                         this._listeners[funcName] = fn;
                         return [4, this.pup(function (_a) {
@@ -677,7 +680,7 @@ var Client = (function () {
                         res = _a.sent();
                         if (err.includes(res))
                             console.error(res);
-                        return [2, err.includes(res) ? false : res];
+                        return [2, (err.includes(res) ? false : res)];
                 }
             });
         });
@@ -776,9 +779,43 @@ var Client = (function () {
             });
         });
     };
+    Client.prototype.decryptMedia = function (message) {
+        return __awaiter(this, void 0, void 0, function () {
+            var m, mediaData;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(typeof message === "string")) return [3, 2];
+                        return [4, this.getMessageById(message)];
+                    case 1:
+                        m = _a.sent();
+                        return [3, 3];
+                    case 2:
+                        m = message;
+                        _a.label = 3;
+                    case 3:
+                        if (!m.mimetype)
+                            throw new Error("Not a media message");
+                        if (!(m.type == "sticker")) return [3, 5];
+                        return [4, this.getStickerDecryptable(m.id)];
+                    case 4:
+                        m = _a.sent();
+                        _a.label = 5;
+                    case 5:
+                        if (m === false)
+                            return [2, false];
+                        return [4, wa_decrypt_1.decryptMedia(m)];
+                    case 6:
+                        mediaData = _a.sent();
+                        return [2, "data:" + m.mimetype + ";base64," + mediaData.toString('base64')];
+                }
+            });
+        });
+    };
+    ;
     Client.prototype.sendImage = function (to, file, filename, caption, quotedMsgId, waitForId, ptt) {
         return __awaiter(this, void 0, void 0, function () {
-            var relativePath;
+            var relativePath, err, res;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -789,11 +826,22 @@ var Client = (function () {
                     case 1:
                         file = _a.sent();
                         _a.label = 2;
-                    case 2: return [4, this.pup(function (_a) {
-                            var to = _a.to, file = _a.file, filename = _a.filename, caption = _a.caption, quotedMsgId = _a.quotedMsgId, waitForId = _a.waitForId, ptt = _a.ptt;
-                            return WAPI.sendImage(file, to, filename, caption, quotedMsgId, waitForId, ptt);
-                        }, { to: to, file: file, filename: filename, caption: caption, quotedMsgId: quotedMsgId, waitForId: waitForId, ptt: ptt })];
-                    case 3: return [2, _a.sent()];
+                    case 2:
+                        err = [
+                            'Not able to send message to broadcast',
+                            'Not a contact',
+                            'Error: Number not linked to WhatsApp Account',
+                            'ERROR: Please make sure you have at least one chat'
+                        ];
+                        return [4, this.pup(function (_a) {
+                                var to = _a.to, file = _a.file, filename = _a.filename, caption = _a.caption, quotedMsgId = _a.quotedMsgId, waitForId = _a.waitForId, ptt = _a.ptt;
+                                return WAPI.sendImage(file, to, filename, caption, quotedMsgId, waitForId, ptt);
+                            }, { to: to, file: file, filename: filename, caption: caption, quotedMsgId: quotedMsgId, waitForId: waitForId, ptt: ptt })];
+                    case 3:
+                        res = _a.sent();
+                        if (err.includes(res))
+                            console.error(res);
+                        return [2, (err.includes(res) ? false : res)];
                 }
             });
         });
@@ -812,7 +860,7 @@ var Client = (function () {
                 switch (_a.label) {
                     case 0: return [4, this.pup(function (_a) {
                             var to = _a.to, url = _a.url, text = _a.text;
-                            WAPI.sendLinkWithAutoPreview(to, url, text);
+                            return WAPI.sendLinkWithAutoPreview(to, url, text);
                         }, { to: to, url: url, text: text })];
                     case 1: return [2, _a.sent()];
                 }
@@ -923,6 +971,22 @@ var Client = (function () {
             });
         });
     };
+    Client.prototype.getSnapshot = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var screenshot;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.getPage().screenshot({
+                            type: "png",
+                            encoding: "base64"
+                        })];
+                    case 1:
+                        screenshot = _a.sent();
+                        return [2, "data:image/png;base64," + screenshot];
+                }
+            });
+        });
+    };
     Client.prototype.iAmAdmin = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -974,6 +1038,19 @@ var Client = (function () {
                             var to = _a.to, base64 = _a.base64, bizNumber = _a.bizNumber, caption = _a.caption, productId = _a.productId;
                             WAPI.sendImageWithProduct(base64, to, caption, bizNumber, productId);
                         }, { to: to, base64: base64, bizNumber: bizNumber, caption: caption, productId: productId })];
+                    case 1: return [2, _a.sent()];
+                }
+            });
+        });
+    };
+    Client.prototype.sendCustomProduct = function (to, image, productData) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.pup(function (_a) {
+                            var to = _a.to, image = _a.image, productData = _a.productData;
+                            return WAPI.sendCustomProduct(to, image, productData);
+                        }, { to: to, image: image, productData: productData })];
                     case 1: return [2, _a.sent()];
                 }
             });
@@ -1758,6 +1835,16 @@ var Client = (function () {
             });
         });
     };
+    Client.prototype.getMessageReaders = function (messageId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.pup(function (messageId) { return WAPI.getMessageReaders(messageId); }, messageId)];
+                    case 1: return [2, _a.sent()];
+                }
+            });
+        });
+    };
     Client.prototype.sendStickerfromUrl = function (to, url, requestConfig) {
         if (requestConfig === void 0) { requestConfig = {}; }
         return __awaiter(this, void 0, void 0, function () {
@@ -1780,6 +1867,50 @@ var Client = (function () {
             });
         });
     };
+    Client.prototype.sendStickerfromUrlAsReply = function (to, url, messageId, requestConfig) {
+        if (requestConfig === void 0) { requestConfig = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            var b64, processingResponse, webpBase64, metadata;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, getDUrl(url, requestConfig)];
+                    case 1:
+                        b64 = _a.sent();
+                        return [4, this.prepareWebp(b64)];
+                    case 2:
+                        processingResponse = _a.sent();
+                        if (!processingResponse)
+                            return [2, false];
+                        webpBase64 = processingResponse.webpBase64, metadata = processingResponse.metadata;
+                        return [4, this.pup(function (_a) {
+                                var webpBase64 = _a.webpBase64, to = _a.to, metadata = _a.metadata;
+                                return WAPI.sendStickerAsReply(webpBase64, to, metadata, messageId);
+                            }, { webpBase64: webpBase64, to: to, metadata: metadata })];
+                    case 3: return [2, _a.sent()];
+                }
+            });
+        });
+    };
+    Client.prototype.sendImageAsStickerAsReply = function (to, b64, messageId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var processingResponse, webpBase64, metadata;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.prepareWebp(b64)];
+                    case 1:
+                        processingResponse = _a.sent();
+                        if (!processingResponse)
+                            return [2, false];
+                        webpBase64 = processingResponse.webpBase64, metadata = processingResponse.metadata;
+                        return [4, this.pup(function (_a) {
+                                var webpBase64 = _a.webpBase64, to = _a.to, metadata = _a.metadata;
+                                return WAPI.sendStickerAsReply(webpBase64, to, metadata, messageId);
+                            }, { webpBase64: webpBase64, to: to, metadata: metadata })];
+                    case 2: return [2, _a.sent()];
+                }
+            });
+        });
+    };
     Client.prototype.getSingleProperty = function (namespace, id, property) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -1793,7 +1924,7 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendImageAsSticker = function (to, b64) {
+    Client.prototype.prepareWebp = function (b64) {
         return __awaiter(this, void 0, void 0, function () {
             var buff, mimeInfo, webpBase64, metadata, scaledImageBuffer, webp;
             return __generator(this, function (_a) {
@@ -1801,7 +1932,7 @@ var Client = (function () {
                     case 0:
                         buff = Buffer.from(b64.replace(/^data:image\/(png|gif|jpeg|webp);base64,/, ''), 'base64');
                         mimeInfo = base64MimeType(b64);
-                        if (!(!mimeInfo || mimeInfo.includes("image"))) return [3, 6];
+                        if (!(!mimeInfo || mimeInfo.includes("image"))) return [3, 5];
                         webpBase64 = b64;
                         metadata = { width: 512, height: 512 };
                         if (!!mimeInfo.includes('webp')) return [3, 4];
@@ -1817,15 +1948,35 @@ var Client = (function () {
                         return [4, webp.toBuffer()];
                     case 3:
                         webpBase64 = (_a.sent()).toString('base64');
-                        _a.label = 4;
-                    case 4: return [4, this.pup(function (_a) {
-                            var webpBase64 = _a.webpBase64, to = _a.to, metadata = _a.metadata;
-                            return WAPI.sendImageAsSticker(webpBase64, to, metadata);
-                        }, { webpBase64: webpBase64, to: to, metadata: metadata })];
-                    case 5: return [2, _a.sent()];
-                    case 6:
+                        return [2, {
+                                metadata: metadata,
+                                webpBase64: webpBase64
+                            }];
+                    case 4: return [3, 6];
+                    case 5:
                         console.log('Not an image');
                         return [2, false];
+                    case 6: return [2];
+                }
+            });
+        });
+    };
+    Client.prototype.sendImageAsSticker = function (to, b64) {
+        return __awaiter(this, void 0, void 0, function () {
+            var processingResponse, webpBase64, metadata;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.prepareWebp(b64)];
+                    case 1:
+                        processingResponse = _a.sent();
+                        if (!processingResponse)
+                            return [2, false];
+                        webpBase64 = processingResponse.webpBase64, metadata = processingResponse.metadata;
+                        return [4, this.pup(function (_a) {
+                                var webpBase64 = _a.webpBase64, to = _a.to, metadata = _a.metadata;
+                                return WAPI.sendImageAsSticker(webpBase64, to, metadata);
+                            }, { webpBase64: webpBase64, to: to, metadata: metadata })];
+                    case 2: return [2, _a.sent()];
                 }
             });
         });
