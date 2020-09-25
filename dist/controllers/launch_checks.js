@@ -76,7 +76,7 @@ var uniq = require('lodash.uniq');
 var fs = require('fs');
 var pkg = require('../../package.json');
 var hasha = require('hasha');
-var currentHash = 'f1d7de3a7817b194743782383fd7b0f9';
+var currentHash = '8d3a09fe3156605ac2cf55ce920bbbab';
 function checkWAPIHash() {
     return __awaiter(this, void 0, void 0, function () {
         var h;

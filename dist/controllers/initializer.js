@@ -105,12 +105,16 @@ function create(_sessionId, config, customUserAgent) {
                     if (typeof _sessionId === 'object' && _sessionId) {
                         config = _sessionId;
                     }
+                    else if (typeof _sessionId === 'string') {
+                        sessionId = _sessionId;
+                    }
                     if (config === null || config === void 0 ? void 0 : config.inDocker) {
                         config = __assign(__assign({}, config), configSchema_1.getConfigFromProcessEnv(configWithCases));
                         config.chromiumArgs = (config === null || config === void 0 ? void 0 : config.chromiumArgs) || [];
-                        sessionId = config.sessionId;
                         customUserAgent = config.customUserAgent;
                     }
+                    if (sessionId === '' || (config === null || config === void 0 ? void 0 : config.sessionId))
+                        sessionId = config.sessionId;
                     prettyFont = cfonts_1.default.render(('@OPEN-WA|WHATSAPP|AUTOMATOR'), {
                         font: '3d',
                         color: 'candy',

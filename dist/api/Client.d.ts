@@ -108,7 +108,7 @@ export declare class Client {
     addLabel(label: string, id: string): Promise<boolean>;
     removeLabel(label: string, id: string): Promise<boolean>;
     sendVCard(chatId: ChatId, vcard: string, contactName: string, contactNumber?: string): Promise<boolean>;
-    setMyName(newName: string): Promise<any>;
+    setMyName(newName: string): Promise<boolean>;
     setChatState(chatState: ChatState, chatId: ChatId): Promise<any>;
     getConnectionState(): Promise<string>;
     getChatWithNonContacts(): Promise<Contact[]>;
