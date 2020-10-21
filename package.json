@@ -1,5 +1,5 @@
 {
-  "name": "@open-wa/wa-automate",
+  "name": "@kriblet/wa-automate",
   "version": "3.0.6",
   "licenseCheckUrl": "https://openwa.dev/license-check",
   "brokenMethodReportUrl": "https://openwa.dev/report-bm",
@@ -8,7 +8,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "@open-wa/wa-automate": "./bin/server.js"
+    "@kriblet/wa-automate": "./bin/server.js"
   },
   "scripts": {
     "build": "rm -rf dist/ && tsc && npm run build:lib && npm run build:config-for-bin",
