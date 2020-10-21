@@ -85,10 +85,6 @@ export interface ConfigObject {
         height: number;
     };
     keepUpdated?: boolean;
-    viewport?: {
-        width?: number;
-        height?: number;
-    };
     legacy?: boolean;
     deleteSessionDataOnLogout?: boolean;
     killProcessOnTimeout?: boolean;
