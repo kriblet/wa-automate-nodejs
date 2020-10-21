@@ -13,14 +13,14 @@
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/open-wa/wa-automate-nodejs.svg)](http://isitmaintained.com/project/open-wa/wa-automate-nodejs "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/open-wa/wa-automate-nodejs.svg)](http://isitmaintained.com/project/open-wa/wa-automate-nodejs "Percentage of issues still open")
 
-<a href="https://discord.gg/dnpp72a"><img src="https://img.shields.io/discord/661438166758195211?color=blueviolet&label=discord&style=flat" /></a> ![WhatsApp_Web 2.2035.12](https://img.shields.io/badge/WhatsApp_Web-2.2035.12-brightgreen.svg)
+<a href="https://discord.gg/dnpp72a"><img src="https://img.shields.io/discord/661438166758195211?color=blueviolet&label=discord&style=flat" /></a> ![WhatsApp_Web 2.2041.6](https://img.shields.io/badge/WhatsApp_Web-2.2041.6-brightgreen.svg)
 
 <p align="center">
   <a href="#functions-list">Key Features</a> •
   <a href="https://open-wa.github.io/wa-automate-nodejs/pages/Getting%20Started/installation.html">Getting Started</a> •
   <a href="https://open-wa.github.io/wa-automate-nodejs/pages/Getting%20Started/quick-run.html">Easy API</a> •
   <a href="https://open-wa.github.io/wa-automate-nodejs/">Documentation</a> •
-  <a href="https://gum.co/BTMt?tier=1%20Restricted%20License%20Key">Get a License Key</a> •
+  <a href="https://openwa.page.link/python-license">Get a License Key</a> •
   <a href="#support">Support</a>
 </p>
 
@@ -41,9 +41,9 @@ const wa = require('@open-wa/wa-automate');
 wa.create().then(client => start(client));
 
 function start(client) {
-  client.onMessage(message => {
+  client.onMessage(async message => {
     if (message.body === 'Hi') {
-      client.sendText(message.from, '👋 Hello!');
+      await client.sendText(message.from, '👋 Hello!');
     }
   });
 }
@@ -128,7 +128,7 @@ If you need paid support, consulting, or just want support/sponsor the ongoing d
 |-	|:-:|
 | Get a License key | <a class="gumroad-button" href="https://gum.co/BTMt?wanted=true" target="_blank" data-gumroad-single-product="true" style='background-color: white !important;background-image: url(https://gumroad.com/button/button_bar.jpg) !important;background-repeat: repeat-x !important;border-radius: 4px !important;box-shadow: rgba(0, 0, 0, 0.4) 0 0 2px !important;color: #999 !important;display: inline-block !important;font-family: -apple-system, ".SFNSDisplay-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif !important;font-size: 16px !important;font-style: normal !important;font-weight: 500 !important;line-height: 50px !important;padding: 0 15px !important;text-shadow: none !important;text-decoration: none !important;'><span class="gumroad-button-logo" style='background-image: url(https://gumroad.com/button/button_logo.png) !important;background-size: cover !important;height: 17px !important;width: 16px !important;display: inline-block !important;margin-bottom: -3px !important;margin-right: 15px !important;'></span>Get a License key</a>
 | Donate or Book 1 hour consult | [![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
-| Per-minute consulting |   <a href="http://api.otechie.com/smashah"><img src="https://api.otechie.com/consultancy/smashah/badge.svg" alt="Consulting"></a>
+| Per-minute consulting |   <a href="http://otechie.com/smashah"><img src="https://api.otechie.com/consultancy/smashah/badge.svg" alt="Consulting"></a>
 | Hire me! | [![Consulting Request][consult-shield]][consult]
 
 ## License

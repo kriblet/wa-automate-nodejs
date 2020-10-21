@@ -4,38 +4,32 @@
 /** */
 import * as path from 'path';
 const fs = require('fs');
-const ChromeLauncher = require('chrome-launcher');
 const puppeteer = require('puppeteer-extra');
-const devtools = require('puppeteer-extra-plugin-devtools')()
-const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 import { puppeteerConfig, useragent, width, height} from '../config/puppeteer.config';
-//@ts-ignore
-import { Browser, Page } from '@types/puppeteer';
+import { Browser, Page } from 'puppeteer';
 import { Spin, EvEmitter } from './events';
 import { ConfigObject } from '../api/model';
 const ON_DEATH = require('death'); //this is intentionally ugly
-const useProxy = require('puppeteer-page-proxy');
-const storage = require('node-persist');
 let browser;
 
 export async function initClient(sessionId?: string, config?:ConfigObject, customUserAgent?:string) {
-  if(config?.useStealth) puppeteer.use(StealthPlugin());
+  if(config?.useStealth) puppeteer.use(require('puppeteer-extra-plugin-stealth')());
   browser = await initBrowser(sessionId,config);
   const waPage = await getWAPage(browser);
   if (config?.proxyServerCredentials) {
     await waPage.authenticate(config.proxyServerCredentials);
   }
   await waPage.setUserAgent(customUserAgent||useragent);
+  if(config?.defaultViewport!==null)
   await waPage.setViewport({
-    width: config.viewport ? config.viewport.width : width,
-    height: config.viewport ? config.viewport.height : height,
+    width: config?.viewport?.width || width,
+    height: config?.viewport?.height || height,
     deviceScaleFactor: 1
   });
   const cacheEnabled = config?.cacheEnabled === false ? false : true;
   const blockCrashLogs = config?.blockCrashLogs === false ? false : true;
   await waPage.setBypassCSP(config?.bypassCSP || false);
   await waPage.setCacheEnabled(cacheEnabled);
-  // const waPage : any = waPage;
   const blockAssets = !config?.headless ? false : config?.blockAssets || false;
   if(blockAssets){
     puppeteer.use(require('puppeteer-extra-plugin-block-resources')({
@@ -71,109 +65,10 @@ export async function initClient(sessionId?: string, config?:ConfigObject, custo
     if (request.url().includes('https://crashlogs.whatsapp.net/') && blockCrashLogs){
       request.abort();
     }
-    else if (proxyAddr) useProxy(request, proxyAddr);
+    else if (proxyAddr) require('puppeteer-page-proxy')(request, proxyAddr);
     else request.continue();
     })
   }
-
-  // if (blockAssets || blockCrashLogs || proxyAddr) {
-  //   let patterns = [];
-    
-  //   if (interceptAuthentication) {
-  //     authCompleteEv = new EvEmitter(sessionId, 'AUTH');
-  //     patterns.push({ urlPattern: '*_priority_components*' });
-  //   }
-    
-  
-  //   if (blockCrashLogs) patterns.push({ urlPattern: '*crashlogs' });
-  
-  //   if (blockAssets) {
-  //     //@ts-ignore
-  //     await waPage._client.send('Network.enable');
-  //     //@ts-ignore
-  //     waPage._client.send('Network.setBypassServiceWorker', {
-  //       bypass: true,
-  //     });
-  
-  //     patterns = [
-  //       ...patterns,
-  //       ...[
-  //         { urlPattern: '*.css' },
-  //         { urlPattern: '*.jpg' },
-  //         { urlPattern: '*.jpg*' },
-  //         { urlPattern: '*.jpeg' },
-  //         { urlPattern: '*.jpeg*' },
-  //         { urlPattern: '*.webp' },
-  //         { urlPattern: '*.png' },
-  //         { urlPattern: '*.mp3' },
-  //         { urlPattern: '*.svg' },
-  //         { urlPattern: '*.woff' },
-  //         { urlPattern: '*.pdf' },
-  //         { urlPattern: '*.zip' },
-  //         { urlPattern: '*crashlogs' },
-  //       ],
-  //     ];
-  //   }
-  
-  //     //@ts-ignore
-  //   await waPage._client.send('Network.setRequestInterception', {
-  //     patterns,
-  //   });
-  
-  //     //@ts-ignore
-  //   waPage._client.on(
-  //     'Network.requestIntercepted',
-  //     async ({ interceptionId, request }) => {
-  //       const extensions = [
-  //         '.css',
-  //         '.jpg',
-  //         '.jpeg',
-  //         '.webp',
-  //         '.mp3',
-  //         '.png',
-  //         '.svg',
-  //         '.woff',
-  //         '.pdf',
-  //         '.zip',
-  //       ];
-  
-  //       const req_extension = path.extname(request.url);
-  
-  //       if (
-  //         (blockAssets && extensions.includes(req_extension)) ||
-  //         request.url.includes('.jpg') ||
-  //         (blockCrashLogs && request.url.includes('crashlogs'))
-  //       ) {
-  //         await (waPage as any)._client.send(
-  //           'Network.continueInterceptedRequest',
-  //           {
-  //             interceptionId,
-  //             rawResponse: '',
-  //           }
-  //         );
-  //       } else {
-  //         if(proxyAddr) {
-  //           console.log("initClient -> proxyAddr", proxyAddr, request.url)
-  //           await useProxy(request, {
-  //             proxy: proxyAddr,
-  //             headers: {
-  //               ...request.headers,
-  //               referer:"https://web.whatsapp.com/",
-  //               host: "https://web.whatsapp.com"
-  //             }});
-  //         } else 
-  //         await (waPage as any)._client.send(
-  //           'Network.continueInterceptedRequest',
-  //           {
-  //             interceptionId,
-  //           }
-  //         );
-
-          
-  //       }
-  //     }
-  //   );
-  // }
 
   //check if [session].json exists in __dirname
   const sessionjsonpath = (config?.sessionDataPath && config?.sessionDataPath.includes('.data.json')) ? path.join(path.resolve(process.cwd(),config?.sessionDataPath || '')) : path.join(path.resolve(process.cwd(),config?.sessionDataPath || ''), `${sessionId || 'session'}.data.json`);
@@ -194,7 +89,7 @@ export async function initClient(sessionId?: string, config?:ConfigObject, custo
         Object.keys(session).forEach(key=>localStorage.setItem(key,session[key]));
     }, sessionjson);
     if(config?.proxyServerCredentials) {
-      await useProxy(waPage, proxyAddr);
+      await require('puppeteer-page-proxy')(waPage, proxyAddr);
       console.log(`Active proxy: ${config.proxyServerCredentials.address}`)
     }
   await waPage.goto(puppeteerConfig.WAUrl)
@@ -214,15 +109,25 @@ export async function injectApi(page: Page) {
   await page.addScriptTag({
     path: require.resolve(path.join(__dirname, '../lib', 'base64.js'))
   });
+  await page.addScriptTag({
+    path: require.resolve(path.join(__dirname, '../lib', 'qr.min.js'))
+  });
+  await page.addScriptTag({
+    path: require.resolve(path.join(__dirname, '../lib', 'hash.js'))
+  });
+  await page.addScriptTag({
+    path: require.resolve(path.join(__dirname, '../lib', 'launch.js'))
+  });
   return page;
 }
 
 async function initBrowser(sessionId?: string, config:any={}) {
   if(config?.useChrome && !config?.executablePath) {
+    const storage = require('node-persist');
     await storage.init();
     let _savedPath = await storage.getItem('executablePath');
     if(!_savedPath) {
-      config.executablePath = ChromeLauncher.Launcher.getInstallations()[0];
+      config.executablePath = require('chrome-launcher').Launcher.getInstallations()[0];
       await storage.setItem('executablePath',config.executablePath)
     } else config.executablePath = _savedPath;
   }
@@ -257,6 +162,7 @@ async function initBrowser(sessionId?: string, config:any={}) {
   });
   //devtools
   if(config&&config.devtools){
+    const devtools = require('puppeteer-extra-plugin-devtools')();
     if(config.devtools.user&&config.devtools.pass) devtools.setAuthCredentials(config.devtools.user, config.devtools.pass)
     try {
       // const tunnel = await devtools.createTunnel(browser);
