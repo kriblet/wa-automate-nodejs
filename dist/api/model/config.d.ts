@@ -48,6 +48,7 @@ export interface ConfigObject {
     bypassCSP?: boolean;
     chromiumArgs?: string[];
     skipBrokenMethodsCheck?: boolean;
+    skipUpdateCheck?: boolean;
     sessionId?: string;
     licenseKey?: string | string[];
     customUserAgent?: string;
@@ -73,6 +74,7 @@ export interface ConfigObject {
     safeMode?: boolean;
     skipSessionSave?: boolean;
     popup?: boolean | number;
+    qrPopUpOnly?: boolean;
     inDocker?: boolean;
     qrQuality?: QRQuality;
     qrFormat?: QRFormat;
@@ -82,6 +84,14 @@ export interface ConfigObject {
         width: number;
         height: number;
     };
+    keepUpdated?: boolean;
+    viewport?: {
+        width?: number;
+        height?: number;
+    };
+    legacy?: boolean;
+    deleteSessionDataOnLogout?: boolean;
+    killProcessOnTimeout?: boolean;
     corsFix?: boolean;
     [x: string]: any;
 }

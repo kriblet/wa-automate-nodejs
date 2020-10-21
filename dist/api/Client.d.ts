@@ -16,6 +16,7 @@ export declare enum namespace {
 export declare enum SimpleListener {
     Message = "onMessage",
     AnyMessage = "onAnyMessage",
+    MessageDeleted = "onMessageDeleted",
     Ack = "onAck",
     AddedToGroup = "onAddedToGroup",
     Battery = "onBattery",
@@ -52,6 +53,7 @@ export declare class Client {
         bypassCSP?: boolean;
         chromiumArgs?: string[];
         skipBrokenMethodsCheck?: boolean;
+        skipUpdateCheck?: boolean;
         sessionId?: string;
         licenseKey?: string | string[];
         customUserAgent?: string;
@@ -74,6 +76,7 @@ export declare class Client {
         safeMode?: boolean;
         skipSessionSave?: boolean;
         popup?: number | boolean;
+        qrPopUpOnly?: boolean;
         inDocker?: boolean;
         qrQuality?: import("./model").QRQuality;
         qrFormat?: import("./model").QRFormat;
@@ -83,12 +86,17 @@ export declare class Client {
             width: number;
             height: number;
         };
+        keepUpdated?: boolean;
+        legacy?: boolean;
+        deleteSessionDataOnLogout?: boolean;
+        killProcessOnTimeout?: boolean;
         corsFix?: boolean;
     };
     private pup;
     private registerListener;
     onMessage(fn: (message: Message) => void): Promise<any>;
     onAnyMessage(fn: (message: Message) => void): Promise<any>;
+    onMessageDeleted(fn: (message: Message) => void): Promise<any>;
     onBattery(fn: (battery: number) => void): Promise<any>;
     onPlugged(fn: (plugged: boolean) => void): Promise<any>;
     onStory(fn: (story: any) => void): Promise<any>;
@@ -123,22 +131,23 @@ export declare class Client {
     sendLocation(to: ChatId, lat: any, lng: any, loc: string): Promise<string>;
     getGeneratedUserAgent(userA?: string): Promise<string>;
     decryptMedia(message: Message | MessageId): Promise<string | false>;
-    sendImage(to: ChatId, file: DataURL | FilePath, filename: string, caption: Content, quotedMsgId?: MessageId, waitForId?: boolean, ptt?: boolean): Promise<string | boolean>;
+    sendImage(to: ChatId, file: DataURL | FilePath, filename: string, caption: Content, quotedMsgId?: MessageId, waitForId?: boolean, ptt?: boolean): any;
     sendYoutubeLink(to: ChatId, url: string, text?: Content): Promise<string | boolean>;
     sendLinkWithAutoPreview(to: ChatId, url: string, text?: Content): Promise<string | boolean>;
     reply(to: ChatId, content: Content, quotedMsgId: MessageId, sendSeen?: boolean): Promise<string | boolean>;
-    sendFile(to: ChatId, file: DataURL | FilePath, filename: string, caption: Content, quotedMsgId?: MessageId, waitForId?: boolean): Promise<string | boolean>;
-    sendPtt(to: ChatId, file: DataURL | FilePath, quotedMsgId: MessageId): Promise<string | boolean>;
+    sendFile(to: ChatId, file: DataURL | FilePath, filename: string, caption: Content, quotedMsgId?: MessageId, waitForId?: boolean, ptt?: boolean): any;
+    sendPtt(to: ChatId, file: DataURL | FilePath, quotedMsgId: MessageId): Promise<any>;
+    sendAudio(to: ChatId, file: DataURL | FilePath, quotedMsgId: MessageId): Promise<any>;
     sendVideoAsGif(to: ChatId, file: DataURL | FilePath, filename: string, caption: Content, quotedMsgId?: MessageId): Promise<string>;
     sendGiphy(to: ChatId, giphyMediaUrl: string, caption: Content): Promise<string>;
-    sendFileFromUrl(to: ChatId, url: string, filename: string, caption: Content, quotedMsgId?: MessageId, requestConfig?: any, waitForId?: boolean): Promise<string | boolean>;
+    sendFileFromUrl(to: ChatId, url: string, filename: string, caption: Content, quotedMsgId?: MessageId, requestConfig?: any, waitForId?: boolean, ptt?: boolean): any;
     getMe(): Promise<any>;
     getSnapshot(): Promise<string>;
     iAmAdmin(): Promise<string[]>;
     syncContacts(): Promise<boolean>;
     getAmountOfLoadedMessages(): Promise<number>;
     getBusinessProfilesProducts(id: ContactId): Promise<any>;
-    sendImageWithProduct(to: ChatId, base64: Base64, caption: Content, bizNumber: ContactId, productId: string): Promise<any>;
+    sendImageWithProduct(to: ChatId, image: Base64, caption: Content, bizNumber: ContactId, productId: string): Promise<any>;
     sendCustomProduct(to: ChatId, image: DataURL, productData: CustomProduct): Promise<string | boolean>;
     sendContact(to: ChatId, contactId: ContactId | ContactId[]): Promise<any>;
     simulateTyping(to: ChatId, on: boolean): Promise<boolean>;
@@ -159,6 +168,7 @@ export declare class Client {
     getGroupMembersId(groupId: GroupChatId): Promise<string[]>;
     joinGroupViaLink(link: string): Promise<string | number | boolean>;
     contactBlock(id: ContactId): Promise<any>;
+    reportSpam(id: ContactId | ChatId): Promise<any>;
     contactUnblock(id: ContactId): Promise<boolean>;
     leaveGroup(groupId: GroupChatId): Promise<any>;
     getVCards(msgId: MessageId): Promise<any>;
@@ -166,6 +176,7 @@ export declare class Client {
     getContact(contactId: ContactId): Promise<Contact>;
     getChatById(contactId: ContactId): Promise<Chat>;
     getMessageById(messageId: MessageId): Promise<Message>;
+    getMyLastMessage(chatId?: ChatId): Promise<Message>;
     getStickerDecryptable(messageId: MessageId): Promise<false | Message>;
     forceStaleMediaUpdate(messageId: MessageId): Promise<false | Message>;
     getChat(contactId: ContactId): Promise<Chat>;
@@ -199,7 +210,7 @@ export declare class Client {
     loadAndGetAllMessagesInChat(chatId: ChatId, includeMe: boolean, includeNotifications: boolean): Promise<Message[]>;
     createGroup(groupName: string, contacts: ContactId | ContactId[]): Promise<any>;
     removeParticipant(groupId: GroupChatId, participantId: ContactId): Promise<boolean>;
-    setGroupIcon(groupId: GroupChatId, b64: Base64): Promise<boolean>;
+    setGroupIcon(groupId: GroupChatId, image: DataURL): Promise<boolean>;
     setGroupIconByUrl(groupId: GroupChatId, url: string, requestConfig?: any): Promise<boolean>;
     addParticipant(groupId: GroupChatId, participantId: ContactId): Promise<any>;
     promoteParticipant(groupId: GroupChatId, participantId: ContactId): Promise<boolean>;
@@ -208,17 +219,17 @@ export declare class Client {
     setGroupEditToAdminsOnly(groupId: GroupChatId, onlyAdmins: boolean): Promise<boolean>;
     setGroupDescription(groupId: GroupChatId, description: string): Promise<boolean>;
     setGroupTitle(groupId: GroupChatId, title: string): Promise<boolean>;
-    getGroupAdmins(groupId: GroupChatId): Promise<Contact[]>;
+    getGroupAdmins(groupId: GroupChatId): Promise<string[]>;
     setChatBackgroundColourHex(hex: string): Promise<boolean>;
     darkMode(activate: boolean): Promise<boolean>;
     getMessageReaders(messageId: MessageId): Promise<Contact[]>;
     sendStickerfromUrl(to: ChatId, url: string, requestConfig?: any): Promise<any>;
     sendStickerfromUrlAsReply(to: ChatId, url: string, messageId: MessageId, requestConfig?: any): Promise<any>;
-    sendImageAsStickerAsReply(to: ChatId, b64: DataURL, messageId: MessageId): Promise<any>;
+    sendImageAsStickerAsReply(to: ChatId, image: DataURL, messageId: MessageId): Promise<any>;
     getSingleProperty(namespace: namespace, id: string, property: string): Promise<any>;
     private prepareWebp;
-    sendImageAsSticker(to: ChatId, b64: DataURL): Promise<any>;
-    sendRawWebpAsSticker(to: ChatId, webpBase64: Base64): Promise<any>;
+    sendImageAsSticker(to: ChatId, image: DataURL): Promise<any>;
+    sendRawWebpAsSticker(to: ChatId, webpBase64: Base64, animated?: boolean): Promise<any>;
     sendGiphyAsSticker(to: ChatId, giphyMediaUrl: URL | string): Promise<any>;
     postTextStatus(text: Content, textRgba: string, backgroundRgba: string, font: number): Promise<string | boolean>;
     postImageStatus(data: DataURL, caption: Content): Promise<string | boolean>;

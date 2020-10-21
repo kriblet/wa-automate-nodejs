@@ -55,19 +55,42 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retrieveQR = exports.phoneIsOutOfReach = exports.isInsideChat = exports.needsToScan = exports.isAuthenticated = void 0;
+exports.smartQr = exports.phoneIsOutOfReach = exports.isInsideChat = exports.needsToScan = exports.isAuthenticated = void 0;
 var qrcode = __importStar(require("qrcode-terminal"));
 var rxjs_1 = require("rxjs");
-var operators_1 = require("rxjs/operators");
+var take_1 = require("rxjs/internal/operators/take");
 var events_1 = require("./events");
-var model_1 = require("../api/model");
-exports.isAuthenticated = function (waPage) { return rxjs_1.merge(exports.needsToScan(waPage), exports.isInsideChat(waPage)).pipe(operators_1.take(1)).toPromise(); };
+exports.isAuthenticated = function (waPage) { return rxjs_1.merge(exports.needsToScan(waPage), exports.isInsideChat(waPage)).pipe(take_1.take(1)).toPromise(); };
 exports.needsToScan = function (waPage) {
-    return rxjs_1.from(waPage
-        .waitForSelector('body > div > div > .landing-wrapper', {
-        timeout: 0
-    })
-        .then(function () { return false; }));
+    return rxjs_1.from(new Promise(function (resolve) { return __awaiter(void 0, void 0, void 0, function () {
+        var _a, _b, _c, error_1;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    _d.trys.push([0, 4, , 5]);
+                    _b = (_a = Promise).race;
+                    _c = [waPage.waitForFunction('checkQrRefresh()', { timeout: 0, polling: 1000 }).catch(function () { })];
+                    return [4, waPage
+                            .waitForSelector('body > div > div > .landing-wrapper', {
+                            timeout: 0
+                        })];
+                case 1: return [4, _b.apply(_a, [_c.concat([
+                            _d.sent()
+                        ])]).catch(function () { })];
+                case 2:
+                    _d.sent();
+                    return [4, waPage.waitForSelector("canvas[aria-label='Scan me!']", { timeout: 0 }).catch(function () { })];
+                case 3:
+                    _d.sent();
+                    resolve(false);
+                    return [3, 5];
+                case 4:
+                    error_1 = _d.sent();
+                    return [3, 5];
+                case 5: return [2];
+            }
+        });
+    }); }));
 };
 exports.isInsideChat = function (waPage) {
     return rxjs_1.from(waPage
@@ -83,73 +106,83 @@ exports.phoneIsOutOfReach = function (waPage) { return __awaiter(void 0, void 0,
         }
     });
 }); };
-var checkIfCanAutoRefresh = function (waPage) { return waPage.evaluate(function () { if (window.Store && window.Store.State) {
-    window.Store.State.default.state = "UNPAIRED";
-    window.Store.State.default.run();
-    return true;
-}
-else {
-    return false;
-} }); };
-function retrieveQR(waPage, sessionId, autoRefresh, throwErrorOnTosBlock, qrLogSkip, format, quality) {
-    if (autoRefresh === void 0) { autoRefresh = false; }
-    if (throwErrorOnTosBlock === void 0) { throwErrorOnTosBlock = false; }
-    if (qrLogSkip === void 0) { qrLogSkip = false; }
-    if (format === void 0) { format = model_1.QRFormat.PNG; }
-    if (quality === void 0) { quality = model_1.QRQuality.TEN; }
+function smartQr(waPage, config) {
     return __awaiter(this, void 0, void 0, function () {
-        var keepTrying, qrEv, evalResult, targetElementFound, error_1, qrData, qrCode;
+        var evalResult, isAuthed, grabAndEmit, qrEv;
+        var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    keepTrying = true;
-                    events_1.ev.on('AUTH.**', function (isAuthenticated, sessionId) { return (keepTrying = false); });
-                    qrEv = new events_1.EvEmitter(sessionId, 'qr');
-                    if (!autoRefresh) return [3, 2];
-                    return [4, checkIfCanAutoRefresh(waPage)];
+                case 0: return [4, waPage.evaluate("window.Store && window.Store.State")];
                 case 1:
                     evalResult = _a.sent();
                     if (evalResult === false) {
                         console.log('Seems as though you have been TOS_BLOCKed, unable to refresh QR Code. Please see https://github.com/open-wa/wa-automate-nodejs#best-practice for information on how to prevent this from happeing. You will most likely not get a QR Code');
-                        if (throwErrorOnTosBlock)
+                        if (config.throwErrorOnTosBlock)
                             throw new Error('TOSBLOCK');
                     }
-                    _a.label = 2;
+                    return [4, exports.isAuthenticated(waPage)];
                 case 2:
-                    if (!(!targetElementFound && keepTrying)) return [3, 7];
-                    _a.label = 3;
-                case 3:
-                    _a.trys.push([3, 5, , 6]);
-                    return [4, waPage.waitForSelector("canvas[aria-label='Scan me!']", {
-                            timeout: 10000,
-                            visible: true,
-                        })];
-                case 4:
-                    targetElementFound = _a.sent();
-                    return [3, 6];
-                case 5:
-                    error_1 = _a.sent();
-                    return [3, 6];
-                case 6: return [3, 2];
-                case 7:
-                    if (!keepTrying)
+                    isAuthed = _a.sent();
+                    if (isAuthed)
                         return [2, true];
-                    _a.label = 8;
-                case 8:
-                    if (!!qrData) return [3, 10];
-                    return [4, waPage.evaluate("document.querySelector(\"canvas[aria-label='Scan me!']\")?document.querySelector(\"canvas[aria-label='Scan me!']\").parentElement.getAttribute(\"data-ref\"):false")];
-                case 9:
-                    qrData = _a.sent();
-                    return [3, 8];
-                case 10: return [4, waPage.evaluate("document.querySelector(\"canvas[aria-label='Scan me!']\").toDataURL('image/" + format + "', " + quality + ")")];
-                case 11:
-                    qrCode = _a.sent();
-                    qrEv.emit(qrCode);
-                    if (!qrLogSkip)
-                        qrcode.generate(qrData, { small: true });
-                    return [2, true];
+                    grabAndEmit = function (qrData) { return __awaiter(_this, void 0, void 0, function () {
+                        var qrCode;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, waPage.evaluate("getQrPng()")];
+                                case 1:
+                                    qrCode = _a.sent();
+                                    qrEv.emit(qrCode);
+                                    if (!config.qrLogSkip)
+                                        qrcode.generate(qrData, { small: true });
+                                    return [2];
+                            }
+                        });
+                    }); };
+                    qrEv = new events_1.EvEmitter(config.sessionId, 'qr');
+                    return [2, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                            var funcName, fn, set, firstQr;
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        funcName = '_smartQr';
+                                        fn = function (qrData) { return __awaiter(_this, void 0, void 0, function () {
+                                            var _a;
+                                            return __generator(this, function (_b) {
+                                                switch (_b.label) {
+                                                    case 0:
+                                                        if (!(qrData === 'QR_CODE_SUCCESS')) return [3, 2];
+                                                        _a = resolve;
+                                                        return [4, exports.isInsideChat(waPage).toPromise()];
+                                                    case 1: return [2, _a.apply(void 0, [_b.sent()])];
+                                                    case 2:
+                                                        grabAndEmit(qrData);
+                                                        return [2];
+                                                }
+                                            });
+                                        }); };
+                                        set = function () { return waPage.evaluate(function (_a) {
+                                            var funcName = _a.funcName;
+                                            return window['smartQr'] ? window["smartQr"](function (obj) { return window[funcName](obj); }) : false;
+                                        }, { funcName: funcName }); };
+                                        return [4, waPage.exposeFunction(funcName, function (obj) { return fn(obj); }).then(set).catch(function (e) {
+                                                console.log("set -> e", e);
+                                            })];
+                                    case 1:
+                                        _a.sent();
+                                        return [4, waPage.evaluate("document.querySelector(\"canvas[aria-label='Scan me!']\")?document.querySelector(\"canvas[aria-label='Scan me!']\").parentElement.getAttribute(\"data-ref\"):false")];
+                                    case 2:
+                                        firstQr = _a.sent();
+                                        return [4, grabAndEmit(firstQr)];
+                                    case 3:
+                                        _a.sent();
+                                        return [2];
+                                }
+                            });
+                        }); })];
             }
         });
     });
 }
-exports.retrieveQR = retrieveQR;
+exports.smartQr = smartQr;

@@ -93,7 +93,7 @@ var puppeteer_config_1 = require("../config/puppeteer.config");
 var sharp_1 = __importDefault(require("sharp"));
 var model_1 = require("./model");
 var p_queue_1 = __importDefault(require("p-queue"));
-var parseFunction = require('parse-function'), pkg = require('../../package.json'), datauri = require('datauri'), fs = require('fs');
+var parseFunction = require('parse-function'), pkg = require('../../package.json'), datauri = require('datauri'), fs = require('fs'), isUrl = require('is-url'), isDataURL = function (s) { return !!s.match(/^data:((?:\w+\/(?:(?!;).)+)?)((?:;[\w\W]*?[^;])*),(.+)$/g); };
 var tree_kill_1 = __importDefault(require("tree-kill"));
 var browser_1 = require("../controllers/browser");
 var auth_1 = require("../controllers/auth");
@@ -110,6 +110,7 @@ var SimpleListener;
 (function (SimpleListener) {
     SimpleListener["Message"] = "onMessage";
     SimpleListener["AnyMessage"] = "onAnyMessage";
+    SimpleListener["MessageDeleted"] = "onMessageDeleted";
     SimpleListener["Ack"] = "onAck";
     SimpleListener["AddedToGroup"] = "onAddedToGroup";
     SimpleListener["Battery"] = "onBattery";
@@ -361,6 +362,13 @@ var Client = (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2, this.registerListener(SimpleListener.AnyMessage, fn)];
+            });
+        });
+    };
+    Client.prototype.onMessageDeleted = function (fn) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2, this.registerListener(SimpleListener.MessageDeleted, fn)];
             });
         });
     };
@@ -819,14 +827,19 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(file.length < 50)) return [3, 2];
+                        if (!!isDataURL(file)) return [3, 5];
                         relativePath = path.join(path.resolve(process.cwd(), file || ''));
                         if (!(fs.existsSync(file) || fs.existsSync(relativePath))) return [3, 2];
                         return [4, datauri(fs.existsSync(file) ? file : relativePath)];
                     case 1:
                         file = _a.sent();
-                        _a.label = 2;
+                        return [3, 5];
                     case 2:
+                        if (!isUrl(file)) return [3, 4];
+                        return [4, this.sendFileFromUrl(to, file, filename, caption, quotedMsgId, {}, waitForId, ptt)];
+                    case 3: return [2, _a.sent()];
+                    case 4: throw new Error('Cannot find file. Make sure the file reference is relative, a valid URL or a valid DataURL');
+                    case 5:
                         err = [
                             'Not able to send message to broadcast',
                             'Not a contact',
@@ -837,7 +850,7 @@ var Client = (function () {
                                 var to = _a.to, file = _a.file, filename = _a.filename, caption = _a.caption, quotedMsgId = _a.quotedMsgId, waitForId = _a.waitForId, ptt = _a.ptt;
                                 return WAPI.sendImage(file, to, filename, caption, quotedMsgId, waitForId, ptt);
                             }, { to: to, file: file, filename: filename, caption: caption, quotedMsgId: quotedMsgId, waitForId: waitForId, ptt: ptt })];
-                    case 3:
+                    case 6:
                         res = _a.sent();
                         if (err.includes(res))
                             console.error(res);
@@ -886,10 +899,10 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendFile = function (to, file, filename, caption, quotedMsgId, waitForId) {
+    Client.prototype.sendFile = function (to, file, filename, caption, quotedMsgId, waitForId, ptt) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2, this.sendImage(to, file, filename, caption, quotedMsgId, waitForId)];
+                return [2, this.sendImage(to, file, filename, caption, quotedMsgId, waitForId, ptt)];
             });
         });
     };
@@ -897,6 +910,13 @@ var Client = (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2, this.sendImage(to, file, 'ptt.ogg', '', quotedMsgId, true, true)];
+            });
+        });
+    };
+    Client.prototype.sendAudio = function (to, file, quotedMsgId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2, this.sendPtt(to, file, quotedMsgId)];
             });
         });
     };
@@ -915,7 +935,7 @@ var Client = (function () {
     };
     Client.prototype.sendGiphy = function (to, giphyMediaUrl, caption) {
         return __awaiter(this, void 0, void 0, function () {
-            var ue, n, r, filename, base64;
+            var ue, n, r, filename, dUrl_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -926,11 +946,11 @@ var Client = (function () {
                         filename = n[1] + ".mp4";
                         return [4, getDUrl(r)];
                     case 1:
-                        base64 = _a.sent();
+                        dUrl_1 = _a.sent();
                         return [4, this.pup(function (_a) {
                                 var to = _a.to, base64 = _a.base64, filename = _a.filename, caption = _a.caption;
-                                WAPI.sendVideoAsGif(base64, to, filename, caption);
-                            }, { to: to, base64: base64, filename: filename, caption: caption })];
+                                WAPI.sendVideoAsGif(dUrl_1, to, filename, caption);
+                            }, { to: to, dUrl: dUrl_1, filename: filename, caption: caption })];
                     case 2: return [2, _a.sent()];
                     case 3:
                         console.log('something is wrong with this giphy link');
@@ -939,7 +959,7 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendFileFromUrl = function (to, url, filename, caption, quotedMsgId, requestConfig, waitForId) {
+    Client.prototype.sendFileFromUrl = function (to, url, filename, caption, quotedMsgId, requestConfig, waitForId, ptt) {
         if (requestConfig === void 0) { requestConfig = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var base64, error_4;
@@ -950,7 +970,7 @@ var Client = (function () {
                         return [4, getDUrl(url, requestConfig)];
                     case 1:
                         base64 = _a.sent();
-                        return [4, this.sendFile(to, base64, filename, caption, quotedMsgId, waitForId)];
+                        return [4, this.sendFile(to, base64, filename, caption, quotedMsgId, waitForId, ptt)];
                     case 2: return [2, _a.sent()];
                     case 3:
                         error_4 = _a.sent();
@@ -1030,14 +1050,14 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendImageWithProduct = function (to, base64, caption, bizNumber, productId) {
+    Client.prototype.sendImageWithProduct = function (to, image, caption, bizNumber, productId) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.pup(function (_a) {
-                            var to = _a.to, base64 = _a.base64, bizNumber = _a.bizNumber, caption = _a.caption, productId = _a.productId;
-                            WAPI.sendImageWithProduct(base64, to, caption, bizNumber, productId);
-                        }, { to: to, base64: base64, bizNumber: bizNumber, caption: caption, productId: productId })];
+                            var to = _a.to, image = _a.image, bizNumber = _a.bizNumber, caption = _a.caption, productId = _a.productId;
+                            WAPI.sendImageWithProduct(image, to, caption, bizNumber, productId);
+                        }, { to: to, image: image, bizNumber: bizNumber, caption: caption, productId: productId })];
                     case 1: return [2, _a.sent()];
                 }
             });
@@ -1282,6 +1302,16 @@ var Client = (function () {
             });
         });
     };
+    Client.prototype.reportSpam = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.pup(function (id) { return WAPI.REPORTSPAM(id); }, id)];
+                    case 1: return [2, _a.sent()];
+                }
+            });
+        });
+    };
     Client.prototype.contactUnblock = function (id) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -1355,6 +1385,16 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.pup(function (messageId) { return WAPI.getMessageById(messageId); }, messageId)];
+                    case 1: return [2, _a.sent()];
+                }
+            });
+        });
+    };
+    Client.prototype.getMyLastMessage = function (chatId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.pup(function (chatId) { return WAPI.getMyLastMessage(chatId); }, chatId)];
                     case 1: return [2, _a.sent()];
                 }
             });
@@ -1662,14 +1702,14 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.setGroupIcon = function (groupId, b64) {
+    Client.prototype.setGroupIcon = function (groupId, image) {
         return __awaiter(this, void 0, void 0, function () {
             var buff, mimeInfo, scaledImageBuffer, jpeg, imgData, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        buff = Buffer.from(b64.replace(/^data:image\/(png|gif|jpeg);base64,/, ''), 'base64');
-                        mimeInfo = base64MimeType(b64);
+                        buff = Buffer.from(image.replace(/^data:image\/(png|gif|jpeg);base64,/, ''), 'base64');
+                        mimeInfo = base64MimeType(image);
                         console.log("setGroupIcon -> mimeInfo", mimeInfo);
                         if (!(!mimeInfo || mimeInfo.includes("image"))) return [3, 4];
                         return [4, sharp_1.default(buff, { failOnError: false })
@@ -1682,7 +1722,6 @@ var Client = (function () {
                         return [4, jpeg.toBuffer()];
                     case 2:
                         imgData = _a + (_b.sent()).toString('base64');
-                        console.log("setGroupIcon -> imgData", imgData);
                         return [4, this.pup(function (_a) {
                                 var groupId = _a.groupId, imgData = _a.imgData;
                                 return WAPI.setGroupIcon(groupId, imgData);
@@ -1870,13 +1909,13 @@ var Client = (function () {
     Client.prototype.sendStickerfromUrlAsReply = function (to, url, messageId, requestConfig) {
         if (requestConfig === void 0) { requestConfig = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var b64, processingResponse, webpBase64, metadata;
+            var dUrl, processingResponse, webpBase64, metadata;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, getDUrl(url, requestConfig)];
                     case 1:
-                        b64 = _a.sent();
-                        return [4, this.prepareWebp(b64)];
+                        dUrl = _a.sent();
+                        return [4, this.prepareWebp(dUrl)];
                     case 2:
                         processingResponse = _a.sent();
                         if (!processingResponse)
@@ -1891,12 +1930,12 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendImageAsStickerAsReply = function (to, b64, messageId) {
+    Client.prototype.sendImageAsStickerAsReply = function (to, image, messageId) {
         return __awaiter(this, void 0, void 0, function () {
             var processingResponse, webpBase64, metadata;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.prepareWebp(b64)];
+                    case 0: return [4, this.prepareWebp(image)];
                     case 1:
                         processingResponse = _a.sent();
                         if (!processingResponse)
@@ -1924,27 +1963,28 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.prepareWebp = function (b64) {
+    Client.prototype.prepareWebp = function (image) {
         return __awaiter(this, void 0, void 0, function () {
-            var buff, mimeInfo, webpBase64, metadata, scaledImageBuffer, webp;
+            var buff, mimeInfo, webpBase64, metadata, pages, webp;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        buff = Buffer.from(b64.replace(/^data:image\/(png|gif|jpeg|webp);base64,/, ''), 'base64');
-                        mimeInfo = base64MimeType(b64);
+                        buff = Buffer.from(image.replace(/^data:image\/(png|gif|jpeg|webp);base64,/, ''), 'base64');
+                        mimeInfo = base64MimeType(image);
                         if (!(!mimeInfo || mimeInfo.includes("image"))) return [3, 5];
-                        webpBase64 = b64;
+                        webpBase64 = image;
                         metadata = { width: 512, height: 512 };
                         if (!!mimeInfo.includes('webp')) return [3, 4];
-                        return [4, sharp_1.default(buff, { failOnError: false })
-                                .resize({ width: 512, height: 512 })
-                                .toBuffer()];
+                        return [4, sharp_1.default(buff).metadata()];
                     case 1:
-                        scaledImageBuffer = _a.sent();
-                        webp = sharp_1.default(scaledImageBuffer, { failOnError: false }).webp();
+                        pages = (_a.sent()).pages;
+                        webp = sharp_1.default(buff, { failOnError: false, animated: !!pages }).webp();
+                        if (!!!pages)
+                            webp = webp.resize(metadata);
                         return [4, webp.metadata()];
                     case 2:
                         metadata = _a.sent();
+                        metadata.animated = !!pages;
                         return [4, webp.toBuffer()];
                     case 3:
                         webpBase64 = (_a.sent()).toString('base64');
@@ -1961,12 +2001,12 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendImageAsSticker = function (to, b64) {
+    Client.prototype.sendImageAsSticker = function (to, image) {
         return __awaiter(this, void 0, void 0, function () {
             var processingResponse, webpBase64, metadata;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.prepareWebp(b64)];
+                    case 0: return [4, this.prepareWebp(image)];
                     case 1:
                         processingResponse = _a.sent();
                         if (!processingResponse)
@@ -1981,7 +2021,8 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.sendRawWebpAsSticker = function (to, webpBase64) {
+    Client.prototype.sendRawWebpAsSticker = function (to, webpBase64, animated) {
+        if (animated === void 0) { animated = false; }
         return __awaiter(this, void 0, void 0, function () {
             var metadata;
             return __generator(this, function (_a) {
@@ -1991,7 +2032,7 @@ var Client = (function () {
                             format: 'webp',
                             width: 512,
                             height: 512,
-                            animated: true,
+                            animated: animated,
                         };
                         return [4, this.pup(function (_a) {
                                 var webpBase64 = _a.webpBase64, to = _a.to, metadata = _a.metadata;

@@ -76,15 +76,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.injectApi = exports.initClient = void 0;
 var path = __importStar(require("path"));
 var fs = require('fs');
-var ChromeLauncher = require('chrome-launcher');
 var puppeteer = require('puppeteer-extra');
-var devtools = require('puppeteer-extra-plugin-devtools')();
-var StealthPlugin = require('puppeteer-extra-plugin-stealth');
 var puppeteer_config_1 = require("../config/puppeteer.config");
 var events_1 = require("./events");
 var ON_DEATH = require('death');
-var useProxy = require('puppeteer-page-proxy');
-var storage = require('node-persist');
 var browser;
 function initClient(sessionId, config, customUserAgent) {
     var _a, _b;
@@ -95,7 +90,7 @@ function initClient(sessionId, config, customUserAgent) {
             switch (_c.label) {
                 case 0:
                     if (config === null || config === void 0 ? void 0 : config.useStealth)
-                        puppeteer.use(StealthPlugin());
+                        puppeteer.use(require('puppeteer-extra-plugin-stealth')());
                     return [4, initBrowser(sessionId, config)];
                 case 1:
                     browser = _c.sent();
@@ -110,6 +105,7 @@ function initClient(sessionId, config, customUserAgent) {
                 case 4: return [4, waPage.setUserAgent(customUserAgent || puppeteer_config_1.useragent)];
                 case 5:
                     _c.sent();
+                    if (!((config === null || config === void 0 ? void 0 : config.defaultViewport) !== null)) return [3, 7];
                     return [4, waPage.setViewport({
                             width: config.viewport ? config.viewport.width : puppeteer_config_1.width,
                             height: config.viewport ? config.viewport.height : puppeteer_config_1.height,
@@ -117,13 +113,15 @@ function initClient(sessionId, config, customUserAgent) {
                         })];
                 case 6:
                     _c.sent();
+                    _c.label = 7;
+                case 7:
                     cacheEnabled = (config === null || config === void 0 ? void 0 : config.cacheEnabled) === false ? false : true;
                     blockCrashLogs = (config === null || config === void 0 ? void 0 : config.blockCrashLogs) === false ? false : true;
                     return [4, waPage.setBypassCSP((config === null || config === void 0 ? void 0 : config.bypassCSP) || false)];
-                case 7:
+                case 8:
                     _c.sent();
                     return [4, waPage.setCacheEnabled(cacheEnabled)];
-                case 8:
+                case 9:
                     _c.sent();
                     blockAssets = !(config === null || config === void 0 ? void 0 : config.headless) ? false : (config === null || config === void 0 ? void 0 : config.blockAssets) || false;
                     if (blockAssets) {
@@ -143,9 +141,9 @@ function initClient(sessionId, config, customUserAgent) {
                         .replace('socks4', '')
                         .replace('://', '') : config.proxyServerCredentials.address) : false;
                     quickAuthed = false;
-                    if (!(interceptAuthentication || proxyAddr || blockCrashLogs)) return [3, 10];
+                    if (!(interceptAuthentication || proxyAddr || blockCrashLogs)) return [3, 11];
                     return [4, waPage.setRequestInterception(true)];
-                case 9:
+                case 10:
                     _c.sent();
                     authCompleteEv_1 = new events_1.EvEmitter(sessionId, 'AUTH');
                     waPage.on('request', function (request) { return __awaiter(_this, void 0, void 0, function () {
@@ -166,15 +164,15 @@ function initClient(sessionId, config, customUserAgent) {
                                         request.abort();
                                     }
                                     else if (proxyAddr)
-                                        useProxy(request, proxyAddr);
+                                        require('puppeteer-page-proxy')(request, proxyAddr);
                                     else
                                         request.continue();
                                     return [2];
                             }
                         });
                     }); });
-                    _c.label = 10;
-                case 10:
+                    _c.label = 11;
+                case 11:
                     sessionjsonpath = ((config === null || config === void 0 ? void 0 : config.sessionDataPath) && (config === null || config === void 0 ? void 0 : config.sessionDataPath.includes('.data.json'))) ? path.join(path.resolve(process.cwd(), (config === null || config === void 0 ? void 0 : config.sessionDataPath) || '')) : path.join(path.resolve(process.cwd(), (config === null || config === void 0 ? void 0 : config.sessionDataPath) || ''), (sessionId || 'session') + ".data.json");
                     sessionjson = '';
                     sd = process.env[sessionId.toUpperCase() + "_DATA_JSON"] ? JSON.parse(process.env[sessionId.toUpperCase() + "_DATA_JSON"]) : config === null || config === void 0 ? void 0 : config.sessionData;
@@ -188,23 +186,23 @@ function initClient(sessionId, config, customUserAgent) {
                             sessionjson = JSON.parse(Buffer.from(s, 'base64').toString('ascii'));
                         }
                     }
-                    if (!sessionjson) return [3, 12];
+                    if (!sessionjson) return [3, 13];
                     return [4, waPage.evaluateOnNewDocument(function (session) {
                             localStorage.clear();
                             Object.keys(session).forEach(function (key) { return localStorage.setItem(key, session[key]); });
                         }, sessionjson)];
-                case 11:
-                    _c.sent();
-                    _c.label = 12;
                 case 12:
-                    if (!(config === null || config === void 0 ? void 0 : config.proxyServerCredentials)) return [3, 14];
-                    return [4, useProxy(waPage, proxyAddr)];
+                    _c.sent();
+                    _c.label = 13;
                 case 13:
+                    if (!(config === null || config === void 0 ? void 0 : config.proxyServerCredentials)) return [3, 15];
+                    return [4, require('puppeteer-page-proxy')(waPage, proxyAddr)];
+                case 14:
                     _c.sent();
                     console.log("Active proxy: " + config.proxyServerCredentials.address);
-                    _c.label = 14;
-                case 14: return [4, waPage.goto(puppeteer_config_1.puppeteerConfig.WAUrl)];
-                case 15:
+                    _c.label = 15;
+                case 15: return [4, waPage.goto(puppeteer_config_1.puppeteerConfig.WAUrl)];
+                case 16:
                     _c.sent();
                     return [2, waPage];
             }
@@ -236,6 +234,21 @@ function injectApi(page) {
                         })];
                 case 4:
                     _a.sent();
+                    return [4, page.addScriptTag({
+                            path: require.resolve(path.join(__dirname, '../lib', 'qr.min.js'))
+                        })];
+                case 5:
+                    _a.sent();
+                    return [4, page.addScriptTag({
+                            path: require.resolve(path.join(__dirname, '../lib', 'hash.js'))
+                        })];
+                case 6:
+                    _a.sent();
+                    return [4, page.addScriptTag({
+                            path: require.resolve(path.join(__dirname, '../lib', 'launch.js'))
+                        })];
+                case 7:
+                    _a.sent();
                     return [2, page];
             }
         });
@@ -245,11 +258,12 @@ exports.injectApi = injectApi;
 function initBrowser(sessionId, config) {
     if (config === void 0) { config = {}; }
     return __awaiter(this, void 0, void 0, function () {
-        var _savedPath, browserFetcher, browserDownloadSpinner_1, revisionInfo, error_1, args, browser, _a, tunnel;
+        var storage, _savedPath, browserFetcher, browserDownloadSpinner_1, revisionInfo, error_1, args, browser, _a, devtools, tunnel;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     if (!((config === null || config === void 0 ? void 0 : config.useChrome) && !(config === null || config === void 0 ? void 0 : config.executablePath))) return [3, 5];
+                    storage = require('node-persist');
                     return [4, storage.init()];
                 case 1:
                     _b.sent();
@@ -257,7 +271,7 @@ function initBrowser(sessionId, config) {
                 case 2:
                     _savedPath = _b.sent();
                     if (!!_savedPath) return [3, 4];
-                    config.executablePath = ChromeLauncher.Launcher.getInstallations()[0];
+                    config.executablePath = require('chrome-launcher').Launcher.getInstallations()[0];
                     return [4, storage.setItem('executablePath', config.executablePath)];
                 case 3:
                     _b.sent();
@@ -305,6 +319,7 @@ function initBrowser(sessionId, config) {
                 case 13:
                     browser = _a;
                     if (config && config.devtools) {
+                        devtools = require('puppeteer-extra-plugin-devtools')();
                         if (config.devtools.user && config.devtools.pass)
                             devtools.setAuthCredentials(config.devtools.user, config.devtools.pass);
                         try {
